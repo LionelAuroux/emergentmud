@@ -37,7 +37,10 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -59,6 +62,9 @@ public class EntityServiceTest {
     private Entity entity;
 
     @Mock
+    private Entity target;
+
+    @Mock
     private GameOutput output;
 
     @Captor
@@ -75,9 +81,12 @@ public class EntityServiceTest {
         contents = generateContents();
 
         when(entityRepository.findByRoom(eq(room))).thenReturn(contents);
+        when(entity.getName()).thenReturn("Scion");
         when(entity.getId()).thenReturn("entityId");
         when(entity.getStompSessionId()).thenReturn("stompSessionId");
         when(entity.getStompUsername()).thenReturn("stompUsername");
+        when(entity.getRoom()).thenReturn(room);
+        when(target.getName()).thenReturn("Bnarg");
 
         entityService = new EntityService(entityRepository, simpMessagingTemplate, promptBuilder);
     }
@@ -86,6 +95,7 @@ public class EntityServiceTest {
     public void testSendMessageToEntity() throws Exception {
         entityService.sendMessageToEntity(entity, output);
 
+        verify(promptBuilder).appendPrompt(eq(output));
         verify(simpMessagingTemplate).convertAndSendToUser(
                 eq("stompUsername"),
                 eq("/queue/output"),
@@ -100,8 +110,17 @@ public class EntityServiceTest {
     }
 
     @Test
-    public void testSendMessageToRoom() throws Exception {
+    public void testSendMessageToRoomExcludeIndividual() throws Exception {
         entityService.sendMessageToRoom(room, entity, output);
+
+        verifyContents();
+    }
+
+    @Test
+    public void testSendMessageToRoomExcludingCollection() throws Exception {
+        List<Entity> entities = Collections.singletonList(entity);
+
+        entityService.sendMessageToRoom(room, entities, output);
 
         verifyContents();
     }
@@ -118,6 +137,64 @@ public class EntityServiceTest {
         entityService.sendMessageToListeners(contents, output);
 
         verifyContents();
+    }
+
+    @Test
+    public void testEntitySearchRoom() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Arrays.asList(entity, target));
+
+        Optional<Entity> optional = entityService.entitySearchRoom(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
+    }
+
+    @Test
+    public void testEntitySearchWorldSameRoom() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Arrays.asList(entity, target));
+
+        Optional<Entity> optional = entityService.entitySearchInWorld(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
+    }
+
+    @Test
+    public void testEntitySearchWorldDifferentRoom() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Collections.singletonList(entity));
+        when(entityRepository.findByNameStartingWithIgnoreCaseAndRoomIsNotNull(eq("bnarg"))).thenReturn(target);
+
+        Optional<Entity> optional = entityService.entitySearchInWorld(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
+    }
+
+    @Test
+    public void testEntitySearchGlobalSameRoom() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Arrays.asList(entity, target));
+
+        Optional<Entity> optional = entityService.entitySearchGlobal(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
+    }
+
+    @Test
+    public void testEntitySearchGlobalDifferentRoom() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Collections.singletonList(entity));
+        when(entityRepository.findByNameStartingWithIgnoreCaseAndRoomIsNotNull(eq("bnarg"))).thenReturn(target);
+
+        Optional<Entity> optional = entityService.entitySearchGlobal(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
+    }
+
+    @Test
+    public void testEntitySearchGlobalOffline() throws Exception {
+        when(entityRepository.findByRoom(eq(room))).thenReturn(Collections.singletonList(entity));
+        when(entityRepository.findByNameStartingWithIgnoreCaseAndRoomIsNotNull(eq("bnarg"))).thenReturn(null);
+        when(entityRepository.findByNameStartingWithIgnoreCase(eq("bnarg"))).thenReturn(target);
+
+        Optional<Entity> optional = entityService.entitySearchGlobal(entity, "bnarg");
+
+        assertEquals(target, optional.orElse(null));
     }
 
     private List<Entity> generateContents() {
@@ -138,6 +215,7 @@ public class EntityServiceTest {
 
     private void verifyContents() {
         for (int i = 0; i < contents.size(); i++) {
+            verify(promptBuilder).appendPrompt(eq(output));
             verify(simpMessagingTemplate).convertAndSendToUser(
                     eq("stompUsername" + i),
                     eq("/queue/output"),
