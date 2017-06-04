@@ -112,7 +112,7 @@ public class RoomBuilder {
 
         if (WhittakerGridLocation.MAX_ELEVATION == room.getElevation()) {
             if (RANDOM.nextDouble() < SPRING_FREQUENCY) {
-                room.setWater(new Water(FlowType.SPRING));
+                room.setWater(new Water(FlowType.SPRING, null));
             }
         }
 

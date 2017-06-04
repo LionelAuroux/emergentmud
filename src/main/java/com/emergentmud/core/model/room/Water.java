@@ -20,14 +20,17 @@
 
 package com.emergentmud.core.model.room;
 
+import com.emergentmud.core.model.Direction;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class Water {
     private FlowType flowType;
+    private Direction origin;
 
-    public Water(FlowType flowType) {
+    public Water(FlowType flowType, Direction origin) {
         this.flowType = flowType;
+        this.origin = origin;
     }
 
     public FlowType getFlowType() {
@@ -36,5 +39,13 @@ public class Water {
 
     public void setFlowType(FlowType flowType) {
         this.flowType = flowType;
+    }
+
+    public Direction getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(Direction origin) {
+        this.origin = origin;
     }
 }

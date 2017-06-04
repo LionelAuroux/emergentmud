@@ -20,6 +20,7 @@
 
 package com.emergentmud.core.model.room;
 
+import com.emergentmud.core.model.Direction;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
@@ -33,7 +34,7 @@ public class WaterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        water = new Water(FlowType.SPRING);
+        water = new Water(FlowType.SPRING, Direction.NORTH);
     }
 
     @Test
@@ -46,5 +47,17 @@ public class WaterTest {
         water.setFlowType(FlowType.SINK);
 
         assertEquals(FlowType.SINK, water.getFlowType());
+    }
+
+    @Test
+    public void testOrigin() throws Exception {
+        assertEquals(Direction.NORTH, water.getOrigin());
+    }
+
+    @Test
+    public void testChangeOrigin() throws Exception {
+        water.setOrigin(Direction.SOUTH);
+
+        assertEquals(Direction.SOUTH, water.getOrigin());
     }
 }

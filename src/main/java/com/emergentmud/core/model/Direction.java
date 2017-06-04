@@ -29,14 +29,16 @@ import java.util.Optional;
 
 @Document
 public class Direction {
-    public static final Direction NORTH = new Direction("north", "south", 0, 1, 0);
-    public static final Direction EAST = new Direction("east", "west", 1, 0, 0);
-    public static final Direction SOUTH = new Direction("south", "north", 0, -1, 0);
-    public static final Direction WEST = new Direction("west", "east", -1, 0, 0);
+    public static final Direction NORTH = new Direction("north","south", "west", "east", 0, 1, 0);
+    public static final Direction EAST = new Direction("east", "west", "south", "north", 1, 0, 0);
+    public static final Direction SOUTH = new Direction("south", "north", "east","west", 0, -1, 0);
+    public static final Direction WEST = new Direction("west", "east", "north", "south", -1, 0, 0);
     public static final List<Direction> DIRECTIONS = Collections.unmodifiableList(Arrays.asList(NORTH, EAST, SOUTH, WEST));
 
     private String name;
     private String opposite;
+    private String left;
+    private String right;
     private long x;
     private long y;
     private long z;
@@ -47,9 +49,11 @@ public class Direction {
         return directionOptional.orElse(null);
     }
 
-    private Direction(String name, String opposite, long x, long y, long z) {
+    private Direction(String name, String opposite, String left, String right, long x, long y, long z) {
         this.name = name;
         this.opposite = opposite;
+        this.left = left;
+        this.right = right;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -61,6 +65,14 @@ public class Direction {
 
     public String getOpposite() {
         return opposite;
+    }
+
+    public String getLeft() {
+        return left;
+    }
+
+    public String getRight() {
+        return right;
     }
 
     public long getX() {

@@ -87,6 +87,12 @@ public class LookCommandTest {
     }
 
     @Test
+    public void testParameters() throws Exception {
+        assertEquals(1, command.getParameters().size());
+        assertEquals(0, command.getSubCommands().size());
+    }
+
+    @Test
     public void testDescription() throws Exception {
         assertNotEquals("No description.", command.getDescription());
     }
@@ -101,7 +107,38 @@ public class LookCommandTest {
     }
 
     @Test
-    public void testLook() throws Exception {
+    public void testLookNoNeighbors() throws Exception {
+        room.setX(0L);
+        room.setY(0L);
+        room.setZ(0L);
+        entity.setRoom(room);
+
+        GameOutput result = command.execute(output, entity, cmd, tokens, raw);
+
+        assertNotNull(result);
+        verify(output, atLeast(3)).append(anyString());
+        verify(output).append(startsWith("[dcyan]Exits:"));
+        verify(output).append(contains("[red]"));
+        verify(output, never()).append(contains("[cyan]"));
+        verify(entityRepository).findByRoom(eq(room));
+        verify(roomRepository).findByXAndYAndZ(eq(1L), eq(0L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(-1L), eq(0L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(0L), eq(1L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(0L), eq(-1L), eq(0L));
+        verifyNoMoreInteractions(roomRepository);
+
+        contents.forEach(e -> {
+                    if (!"Tester1".equals(e.getId())) {
+                        verify(e, atLeastOnce()).getId();
+                        verify(e).getName();
+                    } else {
+                        verify(e, never()).getName();
+                    }
+                });
+    }
+
+    @Test
+    public void testLookWithNeighbors() throws Exception {
         when(roomRepository.findByXAndYAndZ(eq(0L), eq(1L), eq(0L))).thenReturn(mock(Room.class));
         when(roomRepository.findByXAndYAndZ(eq(1L), eq(0L), eq(0L))).thenReturn(mock(Room.class));
         when(roomRepository.findByXAndYAndZ(eq(0L), eq(-1L), eq(0L))).thenReturn(mock(Room.class));
@@ -117,15 +154,22 @@ public class LookCommandTest {
         assertNotNull(result);
         verify(output, atLeast(3)).append(anyString());
         verify(output).append(startsWith("[dcyan]Exits:"));
+        verify(output, never()).append(contains("[red]"));
+        verify(output).append(contains("[cyan]"));
         verify(entityRepository).findByRoom(eq(room));
+        verify(roomRepository).findByXAndYAndZ(eq(1L), eq(0L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(-1L), eq(0L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(0L), eq(1L), eq(0L));
+        verify(roomRepository).findByXAndYAndZ(eq(0L), eq(-1L), eq(0L));
+        verifyNoMoreInteractions(roomRepository);
 
         contents.forEach(e -> {
-                    if (!"Tester1".equals(e.getId())) {
-                        verify(e, atLeastOnce()).getId();
-                        verify(e).getName();
-                    } else {
-                        verify(e, never()).getName();
-                    }
-                });
+            if (!"Tester1".equals(e.getId())) {
+                verify(e, atLeastOnce()).getId();
+                verify(e).getName();
+            } else {
+                verify(e, never()).getName();
+            }
+        });
     }
 }

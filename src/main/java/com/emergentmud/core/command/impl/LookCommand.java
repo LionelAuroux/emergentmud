@@ -52,28 +52,33 @@ public class LookCommand extends BaseCommand {
             output.append("[black]You are floating in a formless void.");
         } else {
             String roomName;
-            String roomDescription;
+            StringBuilder roomDescription = new StringBuilder();
             Room room = entity.getRoom();
 
             if (room.getBiome() == null) {
-                roomName = "No Biome";
+                roomName = "Incomplete Geography";
+                roomDescription.append("The geography around here seems somewhat... unfinished. The ground is just one " +
+                        "seemingly endless, seamless, flat gray rock. No native plant or animal life can be detected.");
             } else {
                 roomName = room.getBiome().getName();
+                roomDescription.append(String.format("The biome here is %s.", room.getBiome().getName()));
             }
-
-            roomDescription = "A bleak, empty landscape stretches beyond the limits of your vision.";
-            roomDescription += String.format("<br/>elevation=%d moisture=%d", room.getElevation(), room.getMoisture());
 
             if (room.getWater() != null) {
-                roomDescription += String.format("<br/>[cyan]The water here is: %s", room.getWater().getFlowType());
-            }
+                String streamDescription = room.getWater().getFlowType().getDescription();
 
-            output.append(String.format("[yellow]%s [dyellow](%d, %d, %d)",
-                    roomName,
-                    room.getX(),
-                    room.getY(),
-                    room.getZ()));
-            output.append(String.format("[default]%s", roomDescription));
+                if (room.getWater().getOrigin() != null) {
+                    streamDescription = streamDescription.replace("[origin]", room.getWater().getOrigin().getName());
+                    streamDescription = streamDescription.replace("[straight]", room.getWater().getOrigin().getOpposite());
+
+                    // these are reversed on purpose - we really want the left and right for the *opposite* of the origin direction
+                    streamDescription = streamDescription.replace("[left]", room.getWater().getOrigin().getRight());
+                    streamDescription = streamDescription.replace("[right]", room.getWater().getOrigin().getLeft());
+                }
+
+                roomDescription.append(" ");
+                roomDescription.append(streamDescription);
+            }
 
             StringBuilder exits = new StringBuilder("[dcyan]Exits:");
 
@@ -89,6 +94,12 @@ public class LookCommand extends BaseCommand {
                 exits.append(d.getName());
             });
 
+            output.append(String.format("[yellow]%s [dyellow](%d, %d, %d)",
+                    roomName,
+                    room.getX(),
+                    room.getY(),
+                    room.getZ()));
+            output.append(String.format("[default]%s", roomDescription));
             output.append(exits.toString());
 
             List<Entity> contents = entityRepository.findByRoom(room);
