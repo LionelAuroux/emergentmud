@@ -32,7 +32,7 @@ public class BiomeTest {
 
     @Before
     public void setUp() throws Exception {
-        biome = new Biome("Biome", 0x112233);
+        biome = new Biome("Biome", 0x112233, "Foo", "Bar", "Baz");
     }
 
     @Test
@@ -53,5 +53,27 @@ public class BiomeTest {
     @Test
     public void testColor() throws Exception {
         assertEquals(0x112233, (long)biome.getColor());
+    }
+
+    @Test
+    public void testSpringText() throws Exception {
+        assertEquals("Foo", biome.getSpringText());
+    }
+
+    @Test
+    public void testSpringTextNull() throws Exception {
+        Biome biome2 = new Biome("Another Biome", 0xFFFFFF, "Sink", "Flow");
+
+        assertNull(biome2.getSpringText());
+    }
+
+    @Test
+    public void testSinkText() throws Exception {
+        assertEquals("Bar", biome.getSinkText());
+    }
+
+    @Test
+    public void testFlowText() throws Exception {
+        assertEquals("Baz", biome.getFlowText());
     }
 }

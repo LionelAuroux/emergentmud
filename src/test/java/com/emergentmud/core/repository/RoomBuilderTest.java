@@ -21,7 +21,6 @@
 package com.emergentmud.core.repository;
 
 import com.emergentmud.core.model.room.Biome;
-import com.emergentmud.core.model.room.FlowType;
 import com.emergentmud.core.model.room.Room;
 import com.emergentmud.core.model.WhittakerGridLocation;
 import org.junit.Before;
@@ -252,12 +251,11 @@ public class RoomBuilderTest {
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
-        assertEquals(FlowType.SPRING, room.getWater().getFlowType());
+        assertNotNull(room.getWater());
 
         room = roomBuilder.generateRoom(0L, 0L, 0L);
 
         assertNotNull(room);
-        assertNull(room.getWater());
     }
 
     private void generateGridLocations(int count) {

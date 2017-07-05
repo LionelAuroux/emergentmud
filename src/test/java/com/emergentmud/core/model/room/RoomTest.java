@@ -25,14 +25,14 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class RoomTest {
     @Mock
     private Biome biome;
-
-    @Mock
-    private Water water;
 
     private Room room = new Room();
 
@@ -57,6 +57,8 @@ public class RoomTest {
 
     @Test
     public void testWater() throws Exception {
+        Map<String, FlowType> water = new HashMap<>();
+
         room.setWater(water);
 
         assertEquals(water, room.getWater());

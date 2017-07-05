@@ -20,6 +20,7 @@
 
 package com.emergentmud.core.repository.loader;
 
+import com.emergentmud.core.model.Capability;
 import com.emergentmud.core.model.CommandMetadata;
 import com.emergentmud.core.repository.CapabilityRepository;
 import com.emergentmud.core.repository.CommandMetadataRepository;
@@ -48,9 +49,21 @@ public class CommandLoaderTest {
     @Captor
     private ArgumentCaptor<List<CommandMetadata>> metadataCaptor;
 
+    @Captor
+    private ArgumentCaptor<List<Capability>> capabilityCaptor;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        when(capabilityRepository.save(anyCollectionOf(Capability.class))).thenAnswer(invocation -> {
+            //noinspection unchecked
+            List<Capability> capabilityList = (List<Capability>)invocation.getArguments()[0];
+
+            capabilityList.forEach(c -> c.setId(UUID.randomUUID().toString()));
+
+            return capabilityList;
+        });
 
         when(commandMetadataRepository.save(anyCollectionOf(CommandMetadata.class))).thenAnswer(invocation -> {
             //noinspection unchecked
@@ -67,27 +80,41 @@ public class CommandLoaderTest {
     @Test
     public void testLoadCommandsEmpty() throws Exception {
         when(commandMetadataRepository.count()).thenReturn(0L);
+        when(capabilityRepository.count()).thenReturn(0L);
 
         commandLoader.loadCommands();
 
+        verify(capabilityRepository).save(capabilityCaptor.capture());
         verify(commandMetadataRepository).save(metadataCaptor.capture());
+
+        List<Capability> capabilityList = capabilityCaptor.getValue();
+
+        capabilityList.forEach(c -> {
+            assertNotNull(c.getId());
+            assertNotNull(c.getName());
+            assertNotNull(c.getDescription());
+            assertNotNull(c.getObject());
+            assertNotNull(c.getScope());
+        });
 
         List<CommandMetadata> metadataList = metadataCaptor.getValue();
 
         metadataList.forEach(m -> {
-                    assertNotNull(m.getId());
-                    assertNotNull(m.getName());
-                    assertNotNull(m.getBeanName());
-                    assertNotNull(m.getPriority());
-                });
+            assertNotNull(m.getId());
+            assertNotNull(m.getName());
+            assertNotNull(m.getBeanName());
+            assertNotNull(m.getPriority());
+        });
     }
 
     @Test
     public void testLoadCommandsNotEmpty() throws Exception {
         when(commandMetadataRepository.count()).thenReturn(60L);
+        when(capabilityRepository.count()).thenReturn(60L);
 
         commandLoader.loadCommands();
 
+        verify(capabilityRepository, never()).save(anyCollectionOf(Capability.class));
         verify(commandMetadataRepository, never()).save(anyCollectionOf(CommandMetadata.class));
     }
 }

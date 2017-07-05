@@ -21,15 +21,8 @@
 package com.emergentmud.core.model.room;
 
 public enum FlowType {
-    SPRING("Clear, fresh water is gurgling out of the ground here."),
-    SINK("Water is sinking into cracks in the ground."),
-    STRAIGHT("A stream is flowing from [origin] to the [straight] here."),
-    LEFT("A stream is flowing from [origin] to [left] here."),
-    RIGHT("A stream is flowing from [origin] to the [right] here."),
-    STRAIGHT_LEFT("The stream forks here, flowing [straight] and [left]."),
-    STRAIGHT_RIGHT("The stream forks here, flowing [straight] and [right]."),
-    LEFT_RIGHT("The stream splits here, flowing [left] and [right]."),
-    STRAIGHT_LEFT_RIGHT("The stream flows from the [origin] and fans out in all directions.");
+    IN("in"),
+    OUT("out");
 
     private String description;
 
@@ -37,7 +30,8 @@ public enum FlowType {
         this.description = description;
     }
 
-    public String getDescription() {
+    @Override
+    public String toString() {
         return description;
     }
 }

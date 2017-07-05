@@ -29,6 +29,7 @@ import java.util.Optional;
 
 @Document
 public class Direction {
+    public static final Direction NOWHERE = new Direction("nowhere", "nowhere", "nowhere", "nowhere", 0, 0 , 0);
     public static final Direction NORTH = new Direction("north","south", "west", "east", 0, 1, 0);
     public static final Direction EAST = new Direction("east", "west", "south", "north", 1, 0, 0);
     public static final Direction SOUTH = new Direction("south", "north", "east","west", 0, -1, 0);
@@ -46,7 +47,7 @@ public class Direction {
     public static Direction forName(String name) {
         Optional<Direction> directionOptional = DIRECTIONS.stream().filter(d -> d.getName().equals(name)).findFirst();
 
-        return directionOptional.orElse(null);
+        return directionOptional.orElse(NOWHERE);
     }
 
     private Direction(String name, String opposite, String left, String right, long x, long y, long z) {

@@ -23,6 +23,7 @@ package com.emergentmud.core.command.impl;
 import com.emergentmud.core.command.BaseCommand;
 import com.emergentmud.core.model.Direction;
 import com.emergentmud.core.model.Entity;
+import com.emergentmud.core.model.room.FlowType;
 import com.emergentmud.core.model.room.Room;
 import com.emergentmud.core.model.stomp.GameOutput;
 import com.emergentmud.core.repository.EntityRepository;
@@ -57,27 +58,37 @@ public class LookCommand extends BaseCommand {
 
             if (room.getBiome() == null) {
                 roomName = "Incomplete Geography";
-                roomDescription.append("The geography around here seems somewhat... unfinished. The ground is just one " +
-                        "seemingly endless, seamless, flat gray rock. No native plant or animal life can be detected.");
+                roomDescription.append("The geography around here seems... unfinished. The ground is just one " +
+                        "seemingly endless, seamless, flat gray plane. No native plant or animal life is evident at all.");
             } else {
                 roomName = room.getBiome().getName();
-                roomDescription.append(String.format("The biome here is %s.", room.getBiome().getName()));
+                roomDescription.append(String.format(" The biome here is %s.", room.getBiome().getName()));
             }
 
             if (room.getWater() != null) {
-                String streamDescription = room.getWater().getFlowType().getDescription();
+                room.getWater().keySet()
+                        .stream()
+                        .filter(k -> room.getWater().get(k).equals(FlowType.IN))
+                        .forEach(i -> {
+                            roomDescription.append(" ");
+                            if (i.equals(Direction.NOWHERE.getName())) {
+                                roomDescription.append(room.getBiome().getSpringText());
+                            } else {
+                                roomDescription.append(room.getBiome().getFlowText().replaceAll("\\[outlets]", i));
+                            }
+                        });
 
-                if (room.getWater().getOrigin() != null) {
-                    streamDescription = streamDescription.replace("[origin]", room.getWater().getOrigin().getName());
-                    streamDescription = streamDescription.replace("[straight]", room.getWater().getOrigin().getOpposite());
-
-                    // these are reversed on purpose - we really want the left and right for the *opposite* of the origin direction
-                    streamDescription = streamDescription.replace("[left]", room.getWater().getOrigin().getRight());
-                    streamDescription = streamDescription.replace("[right]", room.getWater().getOrigin().getLeft());
-                }
-
-                roomDescription.append(" ");
-                roomDescription.append(streamDescription);
+                room.getWater().keySet()
+                        .stream()
+                        .filter(k -> room.getWater().get(k).equals(FlowType.OUT))
+                        .forEach(o -> {
+                            roomDescription.append(" ");
+                            if (o.equals(Direction.NOWHERE.getName())) {
+                                roomDescription.append(room.getBiome().getSpringText());
+                            } else {
+                                roomDescription.append(room.getBiome().getFlowText().replaceAll("\\[outlets]", o));
+                            }
+                        });
             }
 
             StringBuilder exits = new StringBuilder("[dcyan]Exits:");
@@ -99,7 +110,7 @@ public class LookCommand extends BaseCommand {
                     room.getX(),
                     room.getY(),
                     room.getZ()));
-            output.append(String.format("[default]%s", roomDescription));
+            output.append(String.format("[default]%s", roomDescription.toString().trim()));
             output.append(exits.toString());
 
             List<Entity> contents = entityRepository.findByRoom(room);

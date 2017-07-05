@@ -26,6 +26,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Document
 @CompoundIndexes({
         @CompoundIndex(name = "room_idx", def = "{'x': 1, 'y': 1, 'z': 1}")
@@ -38,7 +41,7 @@ public class Room {
     private Biome biome;
     private Integer elevation;
     private Integer moisture;
-    private Water water;
+    private Map<String, FlowType> water;
     private Long x;
     private Long y;
     private Long z;
@@ -81,11 +84,15 @@ public class Room {
         setZ(z);
     }
 
-    public Water getWater() {
+    public Map<String, FlowType> getWater() {
+        if (water == null) {
+            water = new HashMap<>();
+        }
+
         return water;
     }
 
-    public void setWater(Water water) {
+    public void setWater(Map<String, FlowType> water) {
         this.water = water;
     }
 

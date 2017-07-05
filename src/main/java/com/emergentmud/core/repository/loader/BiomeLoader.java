@@ -49,25 +49,55 @@ public class BiomeLoader {
 
             List<Biome> biomes = new ArrayList<>();
 
-            biomes.add(new Biome("Ocean", 0x444471));
-            biomes.add(new Biome("Lake", 0x336699));
-            biomes.add(new Biome("Beach", 0xa09077));
-            biomes.add(new Biome("Snow", 0xffffff));
-            biomes.add(new Biome("Tundra", 0xbbbbaa));
-            biomes.add(new Biome("Bare", 0x888888));
-            biomes.add(new Biome("Scorched", 0x555555));
-            biomes.add(new Biome("Taiga", 0x99aa77));
-            biomes.add(new Biome("Shrubland", 0x889977));
-            biomes.add(new Biome("Temperate Desert", 0xc9d29b));
-            biomes.add(new Biome("Temperate Rain Forest", 0x448855));
-            biomes.add(new Biome("Temperate Deciduous Forest", 0x679459));
-            biomes.add(new Biome("Grassland", 0x88aa55));
-            biomes.add(new Biome("Subtropical Desert", 0xd2b98b));
-            biomes.add(new Biome("Ice", 0x99ffff));
-            biomes.add(new Biome("Marsh", 0x2f6666));
-            biomes.add(new Biome("Tropical Rain Forest", 0x337755));
-            biomes.add(new Biome("Tropical Seasonal Forest", 0x559944));
-            biomes.add(new Biome("River", 0x225588));
+//            biomes.add(new Biome("Ocean", 0x444471));
+//            biomes.add(new Biome("Lake", 0x336699));
+//            biomes.add(new Biome("Beach", 0xa09077));
+            biomes.add(new Biome("Snow", 0xffffff,
+                    "The snow is melting into a gurgling stream here.",
+                    "A stream disappears under a sheet of ice here.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Tundra", 0xbbbbaa,
+                    "A small mountain stream gurgles up from the dirt.",
+                    "A stream ends here, seeping into the ground.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Bare", 0x888888,
+                    "A small mountain stream gurgles up from the dirt.",
+                    "A stream ends here, seeping into the ground.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Scorched", 0x555555,
+                    "A small stream bubbles up through the rocky ground.",
+                    "A stream disappears underground beneath the rocks here.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Taiga", 0x99aa77,
+                    "A stream disappears underground beneath the rocks here.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Shrubland", 0x889977,
+                    "A stream disappears here, flowing through the rocks into some underground cavern.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Temperate Desert", 0xc9d29b,
+                    "A stream disappears here, simply absorbed into the dirt.",
+                    "A stream flows [outlets] from here."));
+            biomes.add(new Biome("Temperate Rain Forest", 0x448855,
+                    "A creek flows through here, vanishing into the thick foliage.",
+                    "A creek flows [outlets] from here."));
+            biomes.add(new Biome("Temperate Deciduous Forest", 0x679459,
+                    "A creek flows through here, disappearing down into a cluster of rocks.",
+                    "A creek flows [outlets] from here."));
+            biomes.add(new Biome("Grassland", 0x88aa55,
+                    "A creek ends here, fanning out across the flat, muddy grassland.",
+                    "A creek flows [outlets] from here."));
+            biomes.add(new Biome("Subtropical Desert", 0xd2b98b,
+                    "A river ends here, simply absorbed into the thirsty desert sand.",
+                    "A river flows [outlets] from here."));
+//            biomes.add(new Biome("Ice", 0x99ffff));
+//            biomes.add(new Biome("Marsh", 0x2f6666));
+            biomes.add(new Biome("Tropical Rain Forest", 0x337755,
+                    "A river flows down through some hidden underground tunnel here.",
+                    "A river flows [outlets] from here."));
+            biomes.add(new Biome("Tropical Seasonal Forest", 0x559944,
+                    "A river ends here, flowing under a large rock pile.",
+                    "A river flows [outlets] from here."));
+//            biomes.add(new Biome("River", 0x225588));
 
             biomeRepository.save(biomes);
         }

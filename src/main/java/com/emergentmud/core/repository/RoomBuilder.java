@@ -20,10 +20,10 @@
 
 package com.emergentmud.core.repository;
 
+import com.emergentmud.core.model.Direction;
 import com.emergentmud.core.model.room.FlowType;
 import com.emergentmud.core.model.room.Room;
 import com.emergentmud.core.model.WhittakerGridLocation;
-import com.emergentmud.core.model.room.Water;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -112,7 +112,7 @@ public class RoomBuilder {
 
         if (WhittakerGridLocation.MAX_ELEVATION == room.getElevation()) {
             if (RANDOM.nextDouble() < SPRING_FREQUENCY) {
-                room.setWater(new Water(FlowType.SPRING, null));
+                room.getWater().put(Direction.NOWHERE.getName(), FlowType.IN);
             }
         }
 

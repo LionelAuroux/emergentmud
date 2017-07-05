@@ -35,9 +35,26 @@ public class Biome {
     @Indexed(unique = true)
     private Integer color;
 
-    public Biome(String name, Integer color) {
+    private String springText = null;
+    private String sinkText = null;
+    private String flowText = null;
+
+    public Biome() {
+    }
+
+    public Biome(String name, Integer color, String sinkText, String flowText) {
         this.name = name;
         this.color = color;
+        this.sinkText = sinkText;
+        this.flowText = flowText;
+    }
+
+    public Biome(String name, Integer color, String springText, String sinkText, String flowText) {
+        this.name = name;
+        this.color = color;
+        this.springText = springText;
+        this.sinkText = sinkText;
+        this.flowText = flowText;
     }
 
     public String getId() {
@@ -54,5 +71,17 @@ public class Biome {
 
     public Integer getColor() {
         return color;
+    }
+
+    public String getSpringText() {
+        return springText;
+    }
+
+    public String getSinkText() {
+        return sinkText;
+    }
+
+    public String getFlowText() {
+        return flowText;
     }
 }
