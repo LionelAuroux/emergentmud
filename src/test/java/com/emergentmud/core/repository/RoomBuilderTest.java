@@ -20,6 +20,7 @@
 
 package com.emergentmud.core.repository;
 
+import com.emergentmud.core.model.Direction;
 import com.emergentmud.core.model.room.Biome;
 import com.emergentmud.core.model.room.Room;
 import com.emergentmud.core.model.WhittakerGridLocation;
@@ -47,8 +48,6 @@ public class RoomBuilderTest {
     private Random random;
 
     private List<WhittakerGridLocation> whittakerGridLocations = new ArrayList<>();
-    private List<Room> neighbors = new ArrayList<>();
-
     private RoomBuilder roomBuilder;
 
     @Before
@@ -60,7 +59,6 @@ public class RoomBuilderTest {
         roomBuilder = new RoomBuilder(roomRepository, whittakerGridLocationRepository, random, springFrequency);
 
         doReturn(whittakerGridLocations).when(whittakerGridLocationRepository).findAll();
-        doReturn(neighbors).when(roomRepository).findByXBetweenAndYBetweenAndZ(anyLong(), anyLong(), anyLong(), anyLong(), anyLong());
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgumentAt(0, Room.class));
     }
 
@@ -78,13 +76,15 @@ public class RoomBuilderTest {
     @Test
     public void testGenerateFirstRoom() throws Exception {
         generateGridLocations(24);
-        generateNeighbors(0);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
         verify(roomRepository).findByXAndYAndZ(eq(0L), eq(0L), eq(0L));
         verify(whittakerGridLocationRepository).findAll();
-        verify(roomRepository).findByXBetweenAndYBetweenAndZ(-2L, 2L, -2L, 2L, 0L);
+        verify(roomRepository).findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.EAST.getX(), Direction.EAST.getY(), Direction.EAST.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.SOUTH.getX(), Direction.SOUTH.getY(), Direction.SOUTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.WEST.getX(), Direction.WEST.getY(), Direction.WEST.getZ());
         verify(roomRepository).save(any(Room.class));
 
         assertEquals(0L, (long)room.getX());
@@ -98,13 +98,21 @@ public class RoomBuilderTest {
     @Test
     public void testGenerateWithLegalNeighbor() throws Exception {
         generateGridLocations(2);
-        generateNeighbors(1);
+
+        Room neighbor = mock(Room.class);
+
+        when(neighbor.getElevation()).thenReturn(1);
+        when(neighbor.getMoisture()).thenReturn(1);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
         verify(roomRepository).findByXAndYAndZ(eq(0L), eq(0L), eq(0L));
         verify(whittakerGridLocationRepository).findAll();
-        verify(roomRepository).findByXBetweenAndYBetweenAndZ(-2L, 2L, -2L, 2L, 0L);
+        verify(roomRepository).findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.EAST.getX(), Direction.EAST.getY(), Direction.EAST.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.SOUTH.getX(), Direction.SOUTH.getY(), Direction.SOUTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.WEST.getX(), Direction.WEST.getY(), Direction.WEST.getZ());
         verify(roomRepository).save(any(Room.class));
 
         assertEquals(0L, (long)room.getX());
@@ -114,25 +122,28 @@ public class RoomBuilderTest {
         assertNotNull(room.getElevation());
         assertNotNull(room.getMoisture());
 
-        boolean result = neighbors.stream()
-                .allMatch(n -> Math.abs(n.getElevation() - room.getElevation()) <= 1
-                        && Math.abs(n.getMoisture() - room.getMoisture()) <= 1);
-
-        assertTrue(result);
+        assertTrue(1 - room.getElevation() <= 1);
+        assertTrue(1 - room.getMoisture() <= 1);
     }
 
     @Test
     public void testGenerateWithIllegalNeighbor() throws Exception {
         generateGridLocations(2);
-        generateNeighbors(1);
 
-        when(neighbors.get(0).getElevation()).thenReturn(5); // this neighbor is too different for our biomes
+        Room neighbor = mock(Room.class);
+
+        when(neighbor.getElevation()).thenReturn(5); // this neighbor is too different for our biomes
+        when(neighbor.getMoisture()).thenReturn(1);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
         verify(roomRepository).findByXAndYAndZ(eq(0L), eq(0L), eq(0L));
         verify(whittakerGridLocationRepository).findAll();
-        verify(roomRepository).findByXBetweenAndYBetweenAndZ(-2L, 2L, -2L, 2L, 0L);
+        verify(roomRepository).findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.EAST.getX(), Direction.EAST.getY(), Direction.EAST.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.SOUTH.getX(), Direction.SOUTH.getY(), Direction.SOUTH.getZ());
+        verify(roomRepository).findByXAndYAndZ(Direction.WEST.getX(), Direction.WEST.getY(), Direction.WEST.getZ());
         verify(roomRepository, never()).save(any(Room.class));
 
         assertNull(room);
@@ -147,7 +158,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(2);
         when(neighbor.getMoisture()).thenReturn(1);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -163,7 +174,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(1);
         when(neighbor.getMoisture()).thenReturn(2);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -179,7 +190,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(1);
         when(neighbor.getMoisture()).thenReturn(1);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -195,7 +206,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(1);
         when(neighbor.getMoisture()).thenReturn(3);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -211,7 +222,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(3);
         when(neighbor.getMoisture()).thenReturn(1);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -227,7 +238,7 @@ public class RoomBuilderTest {
         when(neighbor.getElevation()).thenReturn(2);
         when(neighbor.getMoisture()).thenReturn(2);
 
-        neighbors.add(neighbor);
+        when(roomRepository.findByXAndYAndZ(Direction.NORTH.getX(), Direction.NORTH.getY(), Direction.NORTH.getZ())).thenReturn(neighbor);
 
         Room room = roomBuilder.generateRoom(0L, 0L, 0L);
 
@@ -273,19 +284,6 @@ public class RoomBuilderTest {
             when(whittakerGridLocation.getMoisture()).thenReturn(i);
 
             whittakerGridLocations.add(whittakerGridLocation);
-        }
-    }
-
-    private void generateNeighbors(int count) {
-        neighbors.clear();
-
-        for (int i = 1; i <= count; i++) {
-            Room room = mock(Room.class);
-
-            when(room.getElevation()).thenReturn(i);
-            when(room.getMoisture()).thenReturn(i);
-
-            neighbors.add(room);
         }
     }
 }

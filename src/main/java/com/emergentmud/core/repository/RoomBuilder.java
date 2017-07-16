@@ -37,7 +37,6 @@ import java.util.Random;
 @Component
 public class RoomBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomBuilder.class);
-    private static final int NEIGHBOR_DISTANCE = 2;
     private static final int CHANGE_TOLERANCE = 1;
 
     private RoomRepository roomRepository;
@@ -74,27 +73,29 @@ public class RoomBuilder {
     }
 
     private Room generateRandomRoom(long x, long y, long z) {
+        long start = System.currentTimeMillis();
         List<WhittakerGridLocation> gridLocations = whittakerGridLocationRepository.findAll();
-        List<Room> neighbors = roomRepository.findByXBetweenAndYBetweenAndZ(
-                x - NEIGHBOR_DISTANCE,
-                x + NEIGHBOR_DISTANCE,
-                y - NEIGHBOR_DISTANCE,
-                y + NEIGHBOR_DISTANCE,
-                z);
 
-        neighbors.forEach(neighbor -> {
-            for (Iterator<WhittakerGridLocation> iterator = gridLocations.iterator(); iterator.hasNext();) {
-                WhittakerGridLocation gridLocation = iterator.next();
-                double elevationDiff = Math.abs(neighbor.getElevation() - gridLocation.getElevation());
-                double moistureDiff = Math.abs(neighbor.getMoisture() - gridLocation.getMoisture());
+        for (Direction direction : Direction.DIRECTIONS) {
+            Room neighbor = roomRepository.findByXAndYAndZ(
+                    x + direction.getX(),
+                    y + direction.getY(),
+                    z + direction.getZ());
 
-                if (elevationDiff > CHANGE_TOLERANCE
-                        || moistureDiff > CHANGE_TOLERANCE
-                        || (elevationDiff == CHANGE_TOLERANCE && moistureDiff == CHANGE_TOLERANCE)) {
-                    iterator.remove();
+            if (neighbor != null) {
+                for (Iterator<WhittakerGridLocation> iterator = gridLocations.iterator(); iterator.hasNext(); ) {
+                    WhittakerGridLocation gridLocation = iterator.next();
+                    double elevationDiff = Math.abs(neighbor.getElevation() - gridLocation.getElevation());
+                    double moistureDiff = Math.abs(neighbor.getMoisture() - gridLocation.getMoisture());
+
+                    if (elevationDiff > CHANGE_TOLERANCE
+                            || moistureDiff > CHANGE_TOLERANCE
+                            || (elevationDiff == CHANGE_TOLERANCE && moistureDiff == CHANGE_TOLERANCE)) {
+                        iterator.remove();
+                    }
                 }
             }
-        });
+        }
 
         if (gridLocations.isEmpty()) {
             return null;
@@ -116,6 +117,7 @@ public class RoomBuilder {
             }
         }
 
+        LOGGER.debug("Generated new room in {} ms.", System.currentTimeMillis() - start);
         return room;
     }
 }
